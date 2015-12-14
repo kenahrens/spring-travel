@@ -1,2 +1,2 @@
 # exclude target
-/server/target
+/server/target/*
