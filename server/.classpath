@@ -33,6 +33,6 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/tmartin/dev/newrelic/newrelic-api.jar"/>
+	<classpathentry kind="lib" path="/Users/kahrens/Documents/dev/java/newrelic/newrelic.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
