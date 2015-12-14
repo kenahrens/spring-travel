@@ -52,6 +52,8 @@ public class JpaBookingService implements BookingService {
 	@Transactional(readOnly = true)
 	public List<Hotel> findHotels(SearchCriteria criteria) {
 
+		NewRelic.setTransactionName("Web", "Find Hotels");
+		
 		String pattern = getSearchPattern(criteria);
 		log.debug("search pattern: " + pattern);
 		NewRelic.addCustomParameter("searchCriteria",pattern ); 
@@ -190,6 +192,8 @@ public class JpaBookingService implements BookingService {
 	@Transactional(readOnly = true)
 	public Hotel findHotelById(Long id) {
 		
+		NewRelic.setTransactionName("Web", "Find Hotel By Id");
+		
 		slowThisDown(0);
 		return em.find(Hotel.class, id);
 		
@@ -197,6 +201,9 @@ public class JpaBookingService implements BookingService {
 
 	@Transactional
 	public Booking createBooking(Long hotelId, String username) {
+		
+		NewRelic.setTransactionName("Web", "Create Booking");
+		
 		Hotel hotel = em.find(Hotel.class, hotelId);
 		User user = findUser(username);
 		Booking booking = new Booking(hotel, user);
@@ -211,6 +218,23 @@ public class JpaBookingService implements BookingService {
 	@Override
 	@Transactional
 	public void persistBooking(Booking booking) {
+		
+		NewRelic.setTransactionName("Web", "Book Hotel");
+		NewRelic.recordMetric("Custom/Booking Revenue", Integer.valueOf(booking.getTotal().intValue()) );
+		
+		HashMap<String,Object> bookingMap = new HashMap<String,Object>();
+		bookingMap.put("BookingNumberOfNights",booking.getNights() );
+		bookingMap.put("BookingRevenue",Integer.valueOf(booking.getTotal().intValue()) );
+		bookingMap.put("BookingRate",Integer.valueOf(booking.getHotel().getPrice().intValue() ) );
+		bookingMap.put("BookingHotelName",booking.getHotel().getName() +" - " + booking.getHotel().getCity() + ", " + booking.getHotel().getState() );
+		bookingMap.put("BookingCity", booking.getHotel().getCity() + ", " + booking.getHotel().getState() );
+		bookingMap.put("BookingState", booking.getHotel().getState() );
+		bookingMap.put("BookingZip", booking.getHotel().getZip() );
+		bookingMap.put("BookingSmokingRoom",(booking.isSmoking()) ? "Smoking" : "Non-Smoking" );
+		bookingMap.put("BookingNumberOfBeds",booking.getBeds() );
+		bookingMap.put("BookingAgent",booking.getUser().getName() );	
+		NewRelic.getAgent().getInsights().recordCustomEvent("Booking Event", bookingMap);
+		
 		em.merge(booking);
 	
 		NewRelic.addCustomParameter("BookingNumberOfNights",booking.getNights() );
@@ -230,6 +254,9 @@ public class JpaBookingService implements BookingService {
 
 	@Transactional
 	public void cancelBooking(Long id) {
+		
+		NewRelic.setTransactionName("Web", "Cancel Booking");
+		
 		Booking booking = em.find(Booking.class, id);
 		if (booking != null) {
 			em.refresh(booking);

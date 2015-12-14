@@ -1,5 +1,7 @@
 package org.springframework.samples.travel.web;
 
+import com.newrelic.api.agent.NewRelic;
+
 import java.security.Principal;
 import java.util.List;
 
@@ -22,6 +24,7 @@ public class HotelsMvcController {
 
 	@RequestMapping(value = "/hotels/search", method = RequestMethod.GET)
 	public void search(SearchCriteria searchCriteria, Principal currentUser, Model model) {
+		NewRelic.setTransactionName("Web", "Search Home");
 		if (currentUser != null) {
 			List<Booking> booking = bookingService.findBookings(currentUser.getName());
 			model.addAttribute(booking);
